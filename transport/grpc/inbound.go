@@ -29,6 +29,7 @@ import (
 	"go.uber.org/yarpc/yarpcerrors"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 var (
@@ -108,12 +109,26 @@ func (i *Inbound) start() error {
 	}
 
 	handler := newHandler(i)
-
-	server := grpc.NewServer(
+	serverOpts := []grpc.ServerOption{
 		grpc.CustomCodec(customCodec{}),
 		grpc.UnknownServiceHandler(handler.handle),
 		grpc.MaxRecvMsgSize(i.t.options.serverMaxRecvMsgSize),
 		grpc.MaxSendMsgSize(i.t.options.serverMaxSendMsgSize),
+	}
+
+	if i.t.options.serverCertificateFilePath != "" && i.t.options.serverKeyFilePath != "" {
+		creds, err := credentials.NewServerTLSFromFile(
+			i.t.options.serverCertificateFilePath,
+			i.t.options.serverKeyFilePath,
+		)
+		if err != nil {
+			return err
+		}
+		serverOpts = append(serverOpts, grpc.Creds(creds))
+	}
+
+	server := grpc.NewServer(
+		serverOpts...,
 	)
 
 	go func() {

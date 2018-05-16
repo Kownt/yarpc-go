@@ -65,11 +65,14 @@ func TransportSpec(opts ...Option) yarpcconfig.TransportSpec {
 // All parameters of TransportConfig are optional. This section
 // may be omitted in the transports section.
 type TransportConfig struct {
-	ServerMaxRecvMsgSize int                 `config:"serverMaxRecvMsgSize"`
-	ServerMaxSendMsgSize int                 `config:"serverMaxSendMsgSize"`
-	ClientMaxRecvMsgSize int                 `config:"clientMaxRecvMsgSize"`
-	ClientMaxSendMsgSize int                 `config:"clientMaxSendMsgSize"`
-	Backoff              yarpcconfig.Backoff `config:"backoff"`
+	ServerMaxRecvMsgSize      int                 `config:"serverMaxRecvMsgSize"`
+	ServerMaxSendMsgSize      int                 `config:"serverMaxSendMsgSize"`
+	ClientMaxRecvMsgSize      int                 `config:"clientMaxRecvMsgSize"`
+	ClientMaxSendMsgSize      int                 `config:"clientMaxSendMsgSize"`
+	ClientCertificateFilePath string              `config:"clientCertificateFilePath"`
+	ServerCertificateFilePath string              `config:"serverCertificateFilePath"`
+	ServerKeyFilePath         string              `config:"serverKeyFilePath"`
+	Backoff                   yarpcconfig.Backoff `config:"backoff"`
 }
 
 // InboundConfig configures a gRPC Inbound.
@@ -141,6 +144,15 @@ func (t *transportSpec) buildTransport(transportConfig *TransportConfig, _ *yarp
 	}
 	if transportConfig.ClientMaxSendMsgSize > 0 {
 		options = append(options, ClientMaxSendMsgSize(transportConfig.ClientMaxSendMsgSize))
+	}
+	if transportConfig.ClientCertificateFilePath != "" {
+		options = append(options, ClientCertificateFilePath(transportConfig.ClientCertificateFilePath))
+	}
+	if transportConfig.ServerCertificateFilePath != "" {
+		options = append(options, ServerCertificateFilePath(transportConfig.ServerCertificateFilePath))
+	}
+	if transportConfig.ServerKeyFilePath != "" {
+		options = append(options, ServerKeyFilePath(transportConfig.ServerKeyFilePath))
 	}
 	backoffStrategy, err := transportConfig.Backoff.Strategy()
 	if err != nil {

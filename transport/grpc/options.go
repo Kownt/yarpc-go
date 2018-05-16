@@ -33,10 +33,13 @@ const (
 	// defensive programming
 	// these are copied from grpc-go but we set them explicitly here
 	// in case these change in grpc-go so that yarpc stays consistent
-	defaultServerMaxRecvMsgSize = 1024 * 1024 * 4
-	defaultServerMaxSendMsgSize = math.MaxInt32
-	defaultClientMaxRecvMsgSize = 1024 * 1024 * 4
-	defaultClientMaxSendMsgSize = math.MaxInt32
+	defaultServerMaxRecvMsgSize      = 1024 * 1024 * 4
+	defaultServerMaxSendMsgSize      = math.MaxInt32
+	defaultClientMaxRecvMsgSize      = 1024 * 1024 * 4
+	defaultClientMaxSendMsgSize      = math.MaxInt32
+	defaultClientCertificateFilePath = ""
+	defaultServerCertificateFilePath = ""
+	defaultServerKeyFilePath         = ""
 )
 
 // Option is an interface shared by TransportOption, InboundOption, and OutboundOption
@@ -101,6 +104,24 @@ func ServerMaxSendMsgSize(serverMaxSendMsgSize int) TransportOption {
 	}
 }
 
+// ServerCertificateFilePath is the file path location to find an x509 certificate.
+// If specified the gRPC connection will use TLS
+// The default is to not use TLS.
+func ServerCertificateFilePath(serverCertificateFilePath string) TransportOption {
+	return func(transportOptions *transportOptions) {
+		transportOptions.serverCertificateFilePath = serverCertificateFilePath
+	}
+}
+
+// ServerKeyFilePath is the file path location to find an x509 certificate.
+// If specified the gRPC connection will use TLS
+// The default is to not use TLS.
+func ServerKeyFilePath(serverKeyFilePath string) TransportOption {
+	return func(transportOptions *transportOptions) {
+		transportOptions.serverKeyFilePath = serverKeyFilePath
+	}
+}
+
 // ClientMaxRecvMsgSize is the maximum message size the client can receive.
 //
 // The default is 4MB.
@@ -119,6 +140,15 @@ func ClientMaxSendMsgSize(clientMaxSendMsgSize int) TransportOption {
 	}
 }
 
+// ClientCertificateFilePath is the file path location to find an x509 certificate.
+// If specified the gRPC connection will use TLS
+// The default is to not use TLS.
+func ClientCertificateFilePath(clientCertificateFilePath string) TransportOption {
+	return func(transportOptions *transportOptions) {
+		transportOptions.clientCertificateFilePath = clientCertificateFilePath
+	}
+}
+
 // InboundOption is an option for an inbound.
 type InboundOption func(*inboundOptions)
 
@@ -130,22 +160,28 @@ type OutboundOption func(*outboundOptions)
 func (OutboundOption) grpcOption() {}
 
 type transportOptions struct {
-	backoffStrategy      backoff.Strategy
-	tracer               opentracing.Tracer
-	logger               *zap.Logger
-	serverMaxRecvMsgSize int
-	serverMaxSendMsgSize int
-	clientMaxRecvMsgSize int
-	clientMaxSendMsgSize int
+	backoffStrategy           backoff.Strategy
+	tracer                    opentracing.Tracer
+	logger                    *zap.Logger
+	serverMaxRecvMsgSize      int
+	serverMaxSendMsgSize      int
+	clientMaxRecvMsgSize      int
+	clientMaxSendMsgSize      int
+	clientCertificateFilePath string
+	serverCertificateFilePath string
+	serverKeyFilePath         string
 }
 
 func newTransportOptions(options []TransportOption) *transportOptions {
 	transportOptions := &transportOptions{
-		backoffStrategy:      intbackoff.DefaultExponential,
-		serverMaxRecvMsgSize: defaultServerMaxRecvMsgSize,
-		serverMaxSendMsgSize: defaultServerMaxSendMsgSize,
-		clientMaxRecvMsgSize: defaultClientMaxRecvMsgSize,
-		clientMaxSendMsgSize: defaultClientMaxSendMsgSize,
+		backoffStrategy:           intbackoff.DefaultExponential,
+		serverMaxRecvMsgSize:      defaultServerMaxRecvMsgSize,
+		serverMaxSendMsgSize:      defaultServerMaxSendMsgSize,
+		clientMaxRecvMsgSize:      defaultClientMaxRecvMsgSize,
+		clientMaxSendMsgSize:      defaultClientMaxSendMsgSize,
+		clientCertificateFilePath: defaultClientCertificateFilePath,
+		serverCertificateFilePath: defaultServerCertificateFilePath,
+		serverKeyFilePath:         defaultServerKeyFilePath,
 	}
 	for _, option := range options {
 		option(transportOptions)
