@@ -86,11 +86,14 @@ func TestTransportSpec(t *testing.T) {
 	type attrs map[string]interface{}
 
 	type wantInbound struct {
-		Address              string
-		ServerMaxRecvMsgSize int
-		ServerMaxSendMsgSize int
-		ClientMaxRecvMsgSize int
-		ClientMaxSendMsgSize int
+		Address                   string
+		ServerMaxRecvMsgSize      int
+		ServerMaxSendMsgSize      int
+		ServerCertificateFilePath string
+		ServerKeyFilePath         string
+		ClientMaxRecvMsgSize      int
+		ClientMaxSendMsgSize      int
+		ClientCertificateFilePath string
 	}
 
 	type wantOutbound struct {
@@ -193,20 +196,26 @@ func TestTransportSpec(t *testing.T) {
 			},
 		},
 		{
-			desc: "inbound and transport with message size options",
+			desc: "inbound and transport with message size options and certificate options",
 			transportCfg: attrs{
-				"serverMaxRecvMsgSize": "1024",
-				"serverMaxSendMsgSize": "2048",
-				"clientMaxRecvMsgSize": "4096",
-				"clientMaxSendMsgSize": "8192",
+				"serverMaxRecvMsgSize":      "1024",
+				"serverMaxSendMsgSize":      "2048",
+				"serverCertificateFilePath": "/foo/server/path.cert",
+				"serverKeyFilePath":         "/foo/server/path.key",
+				"clientMaxRecvMsgSize":      "4096",
+				"clientMaxSendMsgSize":      "8192",
+				"clientCertificateFilePath": "/foo/client/path.cert",
 			},
 			inboundCfg: attrs{"address": ":54571"},
 			wantInbound: &wantInbound{
-				Address:              ":54571",
-				ServerMaxRecvMsgSize: 1024,
-				ServerMaxSendMsgSize: 2048,
-				ClientMaxRecvMsgSize: 4096,
-				ClientMaxSendMsgSize: 8192,
+				Address:                   ":54571",
+				ServerMaxRecvMsgSize:      1024,
+				ServerMaxSendMsgSize:      2048,
+				ServerCertificateFilePath: "/foo/server/path.cert",
+				ServerKeyFilePath:         "/foo/server/path.key",
+				ClientMaxRecvMsgSize:      4096,
+				ClientMaxSendMsgSize:      8192,
+				ClientCertificateFilePath: "/foo/client/path.cert",
 			},
 		},
 	}

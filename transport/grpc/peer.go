@@ -46,22 +46,21 @@ type grpcPeer struct {
 
 func newPeer(address string, t *Transport) (*grpcPeer, error) {
 
-	secureFunc := grpc.WithInsecure
+	secureDialFunc := grpc.WithInsecure
 
 	if t.options.clientCertificateFilePath != "" {
-		secureFunc = func() grpc.DialOption {
-			creds, err := credentials.NewClientTLSFromFile(t.options.clientCertificateFilePath, "")
-			if err != nil {
-				//TODO bad code here
-				return nil
-			}
+		creds, err := credentials.NewClientTLSFromFile(t.options.clientCertificateFilePath, "")
+		if err != nil {
+			return nil, err
+		}
+		secureDialFunc = func() grpc.DialOption {
 			return grpc.WithTransportCredentials(creds)
 		}
 	}
 
 	clientConn, err := grpc.Dial(
 		address,
-		secureFunc(),
+		secureDialFunc(),
 		grpc.WithUserAgent(UserAgent),
 		grpc.WithDefaultCallOptions(
 			grpc.CallCustomCodec(customCodec{}),
